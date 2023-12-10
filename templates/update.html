@@ -25,9 +25,15 @@
     <a href="{{ url_for('index') }}">Back</a>
     {% if node %}
         <form method="post">
+            <label for="attr_name">name:</label>
+            <input type="text" id="attr_name" name="attr_name" value="{{ node.name }}">
+            <br>
             {% for key, value in node.items() %}
-                <label for="attr_{{ key }}">{{ key }}:</label>
-                <input type="text" id="attr_{{ key }}" name="attr_{{ key }}" value="{{ value }}"><br>
+                {% if key != 'name' and key != 'last_updated' %}  <!-- 排除 name 和 update_time -->
+                    <label for="attr_{{ key }}">{{ key }}:</label>
+                    <input type="text" id="attr_{{ key }}" name="attr_{{ key }}" value="{{ value }}">
+                    <input type="checkbox" name="delete_attrs[]" value="{{ key }}"> Delete<br>
+                {% endif %}
             {% endfor %}
             <div id="attribute-container"></div>
             <button type="button" onclick="addAttribute()">Add New Attribute</button><br>
@@ -36,5 +42,7 @@
     {% else %}
         <p>Node not found.</p>
     {% endif %}
+
+
 </body>
 </html>

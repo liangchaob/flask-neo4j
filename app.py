@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from neo4j import GraphDatabase, exceptions
 from config import NEO4J_USERNAME, NEO4J_PASSWORD
+from datetime import datetime
+from neo4j.time import DateTime
 
 app = Flask(__name__)
 
@@ -74,16 +76,30 @@ def show(id):
 
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
 def update(id):
-    """更新特定节点的信息。"""
     if request.method == 'POST':
         updated_properties = {key[5:]: value for key, value in request.form.items() if key.startswith("attr_")}
+        delete_attrs = request.form.getlist('delete_attrs[]')
         new_attr_keys = request.form.getlist('new_attr_keys[]')
         new_attr_values = request.form.getlist('new_attr_values[]')
         updated_properties.update({key: value for key, value in zip(new_attr_keys, new_attr_values) if key})
 
         try:
             with driver.session() as session:
-                session.run("MATCH (n) WHERE ID(n) = $id SET n += $properties, n.last_updated = datetime()", id=id, properties=updated_properties)
+                # 更新属性
+                for key, value in updated_properties.items():
+                    if key not in delete_attrs and key != 'last_updated':
+                        query = f"MATCH (n) WHERE ID(n) = $id SET n.`{key}` = $value"
+                        session.run(query, id=id, value=value)
+
+                # 删除属性
+                for key in delete_attrs:
+                    if key != 'name' and key != 'last_updated':
+                        query = f"MATCH (n) WHERE ID(n) = $id REMOVE n.`{key}`"
+                        session.run(query, id=id)
+
+                # 更新时间戳
+                session.run("MATCH (n) WHERE ID(n) = $id SET n.last_updated = datetime()", id=id)
+
         except Exception as e:
             print(f"Error updating node: {e}")
             return redirect(url_for('index'))  # 如果更新出错，重定向回首页
@@ -95,13 +111,16 @@ def update(id):
     try:
         with driver.session() as session:
             result = session.run("MATCH (n) WHERE ID(n) = $id RETURN n", id=id)
-            single_result = result.single()  # 只调用一次 single()
+            single_result = result.single()
             if single_result:
                 node = single_result["n"]
     except Exception as e:
         print(f"Error retrieving node for update: {e}")
 
     return render_template('update.html', node=node, node_id=id)
+
+
+
 
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete(id):
@@ -126,6 +145,28 @@ def list_labels():
         labels = []
 
     return render_template('labels.html', labels=labels)
+
+
+# 定义日期格式化过滤器
+@app.template_filter('dateformat')
+def dateformat(value, format='%Y-%m-%d %H:%M:%S'):
+    if isinstance(value, DateTime):
+        value = datetime(
+            year=int(value.year),
+            month=int(value.month),
+            day=int(value.day),
+            hour=int(value.hour),
+            minute=int(value.minute),
+            second=int(value.second)
+        )
+    elif isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value)
+        except ValueError:
+            return value
+    return value.strftime(format) if value else ''
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
