@@ -2,12 +2,39 @@
 <html>
 <head>
     <title>Update Node</title>
+    <script>
+        function addAttribute() {
+            var container = document.getElementById("attribute-container");
+            var inputKey = document.createElement("input");
+            inputKey.type = "text";
+            inputKey.name = "new_attr_keys[]";
+            inputKey.placeholder = "New Attribute Key";
+            container.appendChild(inputKey);
+
+            var inputValue = document.createElement("input");
+            inputValue.type = "text";
+            inputValue.name = "new_attr_values[]";
+            inputValue.placeholder = "New Attribute Value";
+            container.appendChild(inputValue);
+
+            container.appendChild(document.createElement("br"));
+        }
+    </script>
 </head>
 <body>
-    <form method="post">
-        <label for="new_name">New Name:</label>
-        <input type="text" id="new_name" name="new_name">
-        <input type="submit" value="Update">
-    </form>
+    <a href="{{ url_for('index') }}">Back</a>
+    {% if node %}
+        <form method="post">
+            {% for key, value in node.items() %}
+                <label for="attr_{{ key }}">{{ key }}:</label>
+                <input type="text" id="attr_{{ key }}" name="attr_{{ key }}" value="{{ value }}"><br>
+            {% endfor %}
+            <div id="attribute-container"></div>
+            <button type="button" onclick="addAttribute()">Add New Attribute</button><br>
+            <input type="submit" value="Update">
+        </form>
+    {% else %}
+        <p>Node not found.</p>
+    {% endif %}
 </body>
 </html>

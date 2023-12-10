@@ -2,6 +2,24 @@
 <html>
 <head>
     <title>Home</title>
+    <script>
+        function addAttribute() {
+            var container = document.getElementById("attribute-container");
+            var inputKey = document.createElement("input");
+            inputKey.type = "text";
+            inputKey.name = "attr_keys[]";
+            inputKey.placeholder = "Attribute Key";
+            container.appendChild(inputKey);
+
+            var inputValue = document.createElement("input");
+            inputValue.type = "text";
+            inputValue.name = "attr_values[]";
+            inputValue.placeholder = "Attribute Value";
+            container.appendChild(inputValue);
+
+            container.appendChild(document.createElement("br"));
+        }
+    </script>
 </head>
 <body>
     <!-- 添加搜索表单 -->
@@ -11,22 +29,24 @@
         <input type="submit" value="Search">
     </form>    
     <h2>Create</h2>
-    <form method="post">
-        <!-- 添加标签字段 -->
+    <form method="post" action="{{ url_for('index') }}">
         <label for="label">Label:</label>
         <input type="text" id="label" name="label">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name">
+        <div id="attribute-container"></div>
+        <button type="button" onclick="addAttribute()">Add Attribute</button>
         <input type="submit" value="Create">
     </form>
 
     <h2>Labels</h2>
     <ul>
-        <li><a href="{{ url_for('index', label='AllLabels') }}">All</a></li>
+        <li><a href="{{ url_for('index') }}">All</a></li>
         {% for label in labels %}
-            <li><a href="{{ url_for('index', label=label) }}">{{ label }}</a></li>
+            <li><a href="{{ url_for('index', selected_label=label) }}">{{ label }}</a></li>
         {% endfor %}
     </ul>
+    
 
     <h2>Nodes</h2>
     <ul>

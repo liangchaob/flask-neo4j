@@ -1,9 +1,23 @@
+<!-- show.html -->
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Show</title>
+    <title>Show Node</title>
 </head>
 <body>
-    <h1>Details for {{ node.name }}</h1>
+    <!-- 添加回到首页的链接 -->
+    <a href="{{ url_for('index') }}">Back to Home</a>
+    {% if node %}
+        <h2>Node Details</h2>
+        <ul>
+            {% for key, value in node.items() %}
+                <li>{{ key }}: {{ value }}</li>
+            {% endfor %}
+        </ul>
+        <!-- 添加指向 update 页面的链接 -->
+        <a href="{{ url_for('update', id=node.id) }}">Update</a>
+    {% else %}
+        <p>Node not found.</p>
+    {% endif %}
 </body>
 </html>
