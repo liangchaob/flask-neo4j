@@ -4,7 +4,13 @@
     <title>Home</title>
 </head>
 <body>
-    <a href="/labels">All Labels</a>
+    <!-- 添加搜索表单 -->
+    <h2>Search</h2>
+    <form action="{{ url_for('index') }}" method="get">
+        <input type="text" name="search" placeholder="Search by name" value="{{ search_query }}">
+        <input type="submit" value="Search">
+    </form>    
+    <h2>Create</h2>
     <form method="post">
         <!-- 添加标签字段 -->
         <label for="label">Label:</label>
@@ -14,6 +20,15 @@
         <input type="submit" value="Create">
     </form>
 
+    <h2>Labels</h2>
+    <ul>
+        <li><a href="{{ url_for('index', label='AllLabels') }}">All</a></li>
+        {% for label in labels %}
+            <li><a href="{{ url_for('index', label=label) }}">{{ label }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h2>Nodes</h2>
     <ul>
         {% for node in nodes %}
             <li>
@@ -26,6 +41,7 @@
             </li>
         {% endfor %}
     </ul>
-    
+
+
 </body>
 </html>

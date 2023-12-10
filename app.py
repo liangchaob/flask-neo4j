@@ -12,28 +12,39 @@ except exceptions.ServiceUnavailable as e:
     raise SystemExit("Failed to connect to Neo4j database.") from e
 
 @app.route('/', methods=['GET', 'POST'])
-def index():
-    """渲染主页，显示所有节点，并提供创建新节点的功能。"""
+@app.route('/<label>', methods=['GET', 'POST'])
+def index(label=None):
+    search_query = request.args.get('search', '')  # 获取搜索查询参数
+
     if request.method == 'POST':
         name = request.form['name']
         label = request.form['label']
         try:
             with driver.session() as session:
-                session.run(f"CREATE (p:{label} {{name: $name}})", name=name)
+                session.run(f"CREATE (p:`{label}` {{name: $name}})", name=name)
         except Exception as e:
-            # 处理可能的数据库异常
             print(f"Error creating node: {e}")
 
-    # 检索所有节点及其标签
     try:
         with driver.session() as session:
-            result = session.run("MATCH (n) RETURN ID(n) AS id, n.name, labels(n)")
-            nodes = [{"id": record["id"], "name": record["n.name"], "labels": record["labels(n)"]} for record in result]
-    except Exception as e:
-        print(f"Error retrieving nodes: {e}")
-        nodes = []
+            # 构建基础查询
+            if label and label != "AllLabels":
+                query = f"MATCH (n:`{label}`) WHERE n.name CONTAINS $search_query RETURN ID(n) AS id, n.name, labels(n)"
+            else:
+                query = "MATCH (n) WHERE n.name CONTAINS $search_query RETURN ID(n) AS id, n.name, labels(n)"
 
-    return render_template('index.html', nodes=nodes)
+            node_result = session.run(query, search_query=search_query)
+            nodes = [{"id": record["id"], "name": record["n.name"], "labels": record["labels(n)"]} for record in node_result]
+
+            label_result = session.run("CALL db.labels()")
+            labels = [record["label"] for record in label_result]
+    except Exception as e:
+        print(f"Error: {e}")
+        nodes, labels = [], []
+
+    return render_template('index.html', nodes=nodes, labels=labels, selected_label=label, search_query=search_query)
+
+
 
 @app.route('/show/<int:id>', methods=['GET'])
 def show(id):

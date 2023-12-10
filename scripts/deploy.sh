@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 进入项目目录
-cd /flask-neo4j
+cd ~/flask-neo4j
 
 # 拉取最新的代码
 git pull
