@@ -6,9 +6,10 @@
 </head>
 <body>
     <!-- 添加回到首页的链接 -->
-    <a href="{{ url_for('index') }}">Back to Home</a>
+    <a href="{{ url_for('index') }}">Back</a>
     {% if node %}
-        <h2>Node Details</h2>
+        <h6>{{ node.labels | join(', ') }}</h6>
+        <h2>{{ node.name }}</h2>
         <ul>
             {% for key, value in node.items() %}
                 <li>{{ key }}: {{ value }}</li>
