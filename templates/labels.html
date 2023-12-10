@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Labels List</title>
+</head>
+<body>
+    <h1>All Labels</h1>
+
+    <!-- 返回主页的链接 -->
+    <a href="/">Back to Home</a>
+
+    <ul>
+        {% for label in labels %}
+            <li>{{ label }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

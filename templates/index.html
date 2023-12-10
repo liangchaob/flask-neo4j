@@ -4,23 +4,28 @@
     <title>Home</title>
 </head>
 <body>
+    <a href="/labels">All Labels</a>
     <form method="post">
+        <!-- 添加标签字段 -->
+        <label for="label">Label:</label>
+        <input type="text" id="label" name="label">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name">
         <input type="submit" value="Create">
     </form>
 
     <ul>
-        {% for name in names %}
+        {% for node in nodes %}
             <li>
-                {{ name }} 
-                <a href="{{ url_for('details', name=name) }}">Details</a> 
-                <a href="{{ url_for('update', name=name) }}">Update</a> 
-                <form method="post" action="{{ url_for('delete', name=name) }}">
+                {{ node.name }} - Labels: {{ node.labels | join(', ') }}
+                <a href="{{ url_for('show', id=node.id) }}">Show</a>
+                <a href="{{ url_for('update', id=node.id) }}">Update</a>
+                <form method="post" action="{{ url_for('delete', id=node.id) }}">
                     <input type="submit" value="Delete">
                 </form>
             </li>
         {% endfor %}
     </ul>
+    
 </body>
 </html>
