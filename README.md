@@ -24,7 +24,7 @@
 1. **克隆仓库** ：
 
 ```
-git clone https://github.com/liangchaob/zhildemo.git
+git clone https://github.com/liangchaob/flask-neo4j.git
 ```
 
 2. **安装依赖** ：
