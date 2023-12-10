@@ -1,7 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home</title>
+    <title>flask-neo4j</title>
+    <style>
+        .container {
+            display: flex;
+        }
+        .left-panel {
+            width: 20%;
+            margin-right: 2%;
+        }
+        .right-panel {
+            width: 78%;
+        }
+        .search-create-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+    </style>
     <script>
         function addAttribute() {
             var container = document.getElementById("attribute-container");
@@ -22,46 +39,67 @@
     </script>
 </head>
 <body>
-    <!-- 添加搜索表单 -->
-    <h2>Search</h2>
-    <form action="{{ url_for('index') }}" method="get">
-        <input type="text" name="search" placeholder="Search by name" value="{{ search_query }}">
-        <input type="submit" value="Search">
-    </form>    
-    <h2>Create</h2>
-    <form method="post" action="{{ url_for('index') }}">
-        <label for="label">Label:</label>
-        <input type="text" id="label" name="label">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name">
-        <div id="attribute-container"></div>
-        <button type="button" onclick="addAttribute()">Add Attribute</button>
-        <input type="submit" value="Create">
-    </form>
+    <div class="container">
+        <!-- 左侧面板: 标签列表 -->
+        <div class="left-panel">
+            <!-- <h2>Labels</h2> -->
+            <ul>
+                <li><a href="{{ url_for('index') }}">All</a></li>
+                {% for label in labels %}
+                    <li><a href="{{ url_for('index', selected_label=label) }}">{{ label }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
 
-    <h2>Labels</h2>
-    <ul>
-        <li><a href="{{ url_for('index') }}">All</a></li>
-        {% for label in labels %}
-            <li><a href="{{ url_for('index', selected_label=label) }}">{{ label }}</a></li>
-        {% endfor %}
-    </ul>
-    
+        <!-- 右侧面板: 节点列表和创建表单 -->
+        <div class="right-panel">
+            <div class="search-create-container">
 
-    <h2>Nodes</h2>
-    <ul>
-        {% for node in nodes %}
-            <li>
-                {{ node.name }} - Labels: {{ node.labels | join(', ') }}
-                <a href="{{ url_for('show', id=node.id) }}">Show</a>
-                <a href="{{ url_for('update', id=node.id) }}">Update</a>
-                <form method="post" action="{{ url_for('delete', id=node.id) }}">
-                    <input type="submit" value="Delete">
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
+                <!-- 创建表单 -->
+                <div>
+                    <!-- <h2>Create</h2> -->
+                    <form method="post" action="{{ url_for('index') }}">
+                        <label for="label">Label:</label>
+                        <input type="text" id="label" name="label" list="labelList">
+                        <datalist id="labelList">
+                            {% for label in labels %}
+                                <option value="{{ label }}">
+                            {% endfor %}
+                        </datalist>
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name">
+                        <div id="attribute-container"></div>
+                        <button type="button" onclick="addAttribute()">Add Attribute</button>
+                        <input type="submit" value="Create">
+                    </form>
+                </div>
 
+                <!-- 添加搜索表单 -->
+                <div>
+                    <!-- <h2>Search</h2> -->
+                    <form action="{{ url_for('index') }}" method="get">
+                        <input type="text" name="search" placeholder="Search by name" value="{{ search_query }}">
+                        <input type="submit" value="Search">
+                    </form>
+                </div>
 
+            </div>
+
+            <!-- 节点列表 -->
+            <h2>Nodes</h2>
+            <ul>
+                {% for node in nodes %}
+                    <li>
+                        {{ node.name }} - Labels: {{ node.labels | join(', ') }}
+                        <a href="{{ url_for('show', id=node.id) }}">Show</a>
+                        <a href="{{ url_for('update', id=node.id) }}">Update</a>
+                        <form method="post" action="{{ url_for('delete', id=node.id) }}">
+                            <input type="submit" value="Delete">
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>
