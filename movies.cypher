@@ -504,15 +504,15 @@ CREATE (TheMatrix:Movie {title:'The Matrix', released:1999, tagline:'Welcome to 
       (JamesThompson)-[:REVIEWED {summary:'Fun, but a little far fetched', rating:65}]->(TheDaVinciCode),
       (JessicaThompson)-[:REVIEWED {summary:'You had me at Jerry', rating:92}]->(JerryMaguire)
 
-
-
+      WITH *
       MATCH (n)
       WHERE n.name IS NULL
       SET n.name = n.title
 
+      WITH *
       MATCH (n)
       WHERE n.last_updated IS NULL
       SET n.last_updated = datetime()
-
-      WITH TomH as a
-      MATCH (a)-[:ACTED_IN]->(m)<-[:DIRECTED]-(d) RETURN a,m,d LIMIT 10;
+      
+      WITH *
+      MATCH (n) RETURN n
