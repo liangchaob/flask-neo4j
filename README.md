@@ -11,7 +11,7 @@
 * **删除节点** ：用户可以删除特定节点。
 * **查看标签** ：用户可以查看数据库中所有唯一标签的列表。
 
-![demo](http://ipic-liangchao.test.upcdn.net/frame.gif)
+![demo](http://ipic-liangchao.test.upcdn.net/GIF%202023-12-12%200-44-06.gif)
 
 ## 初始配置方法
 
@@ -54,6 +54,9 @@ python app.py
 ### 连接到 Neo4j 数据库
 
 确保您的 Neo4j 数据库正在运行，并且您已经在 `config.py` 文件中正确设置了数据库的用户名和密码。应用将使用这些凭据连接到数据库。
+
+- **示例数据** ：
+  示例数据保存在 `movies.cypher` 中，通过Neo4j Blowser执行后即可插入数据库
 
 ## 使用说明
 
