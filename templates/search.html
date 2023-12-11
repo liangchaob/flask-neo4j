@@ -16,9 +16,9 @@
         #results {
             display: inline-block; /* 使容器成为内联块 */
             text-align: left; /* 左对齐容器内的元素 */
-            margin-top: 20px;
             margin-left: auto; /* 与右边距一起实现居中 */
             margin-right: auto;
+            margin-top: 100px; /* 顶部留出足够空间 */
         }
 
         #results p {
@@ -58,26 +58,55 @@
         a:hover {
             color: #ddd;
         }
+        /* 固定顶部区域的样式 */
+        .fixed-top {
+            position: fixed; /* 固定位置 */
+            top: 0; /* 顶部对齐 */
+            width: 100%; /* 宽度为全屏 */
+            background-color: #333; /* 背景颜色 */
+            z-index: 1000; /* 确保在最上层 */
+            padding: 10px 0; /* 一些内边距 */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5); /* 下阴影 */
+        }
+        /* 设置默认图片样式 */
+        #defaultImage{
+            text-align:center; 
+            margin-top:200px;
+        }
+
     </style>
 </head>
 <body>
-    <!-- 使用 top-right 类来定位链接 -->
-    <div class="top-right">
-        <a href="/admin">Admin Panel</a>
+    <div class="fixed-top">
+        <!-- 使用 top-right 类来定位链接 -->
+        <div class="top-right">
+            <a href="/admin">Admin Panel</a>
+        </div>
+
+        <div id="tabs">
+            <!-- 动态生成标签，初始时选中 'All Labels' -->
+            <span class="tab active" onclick="selectTab('')">All</span>
+        </div>
+
+        <form id="searchForm">
+            <input type="text" id="keyword" placeholder="Enter keyword">
+            <input type="hidden" id="label" value=""> <!-- 隐藏的标签输入，由 JavaScript 控制 -->
+            <button type="submit">Search</button>
+        </form>
     </div>
 
-    <div id="tabs">
-        <!-- 动态生成标签，初始时选中 'All Labels' -->
-        <span class="tab active" onclick="selectTab('')">All</span>
+    <div class="content">
+        <!-- 默认图片 -->
+        <div id="defaultImage">
+            <img src="/static/default-image.png" alt="No Results" />
+        </div>
+
+        <!-- 搜索结果 -->
+        <div id="results"></div>
     </div>
 
-    <form id="searchForm">
-        <input type="text" id="keyword" placeholder="Enter keyword">
-        <input type="hidden" id="label" value=""> <!-- 隐藏的标签输入，由 JavaScript 控制 -->
-        <button type="submit">Search</button>
-    </form>
+        <div id="results"></div>
 
-    <div id="results"></div>
 
     <script>
         // 当文档加载完成时，获取并显示所有标签
@@ -121,16 +150,29 @@
                 .then(response => response.json())
                 .then(data => {
                     var resultsDiv = document.getElementById('results');
+                    var defaultImageDiv = document.getElementById('defaultImage');
                     resultsDiv.innerHTML = '';
-                    data.forEach(node => {
-                        // 添加 target="_blank" 以在新标签页中打开链接
-                        var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
-                        var nodeLabels = node.labels.join(', ');
-                        resultsDiv.innerHTML += `<p><mark>${nodeLabels}</mark> ${nodeLink}</p>`;
-                    });
+
+                    if (data.length > 0) {
+                        // 有结果时，隐藏默认图片
+                        defaultImageDiv.style.display = 'none';
+                        data.forEach(node => {
+                            var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
+                            var nodeLabels = node.labels.join(', ');
+                            resultsDiv.innerHTML += `<p><mark>${nodeLabels}</mark> ${nodeLink}</p>`;
+                        });
+                    } else {
+                        // 无结果时，显示默认图片
+                        defaultImageDiv.style.display = 'block';
+                    }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    // 出错时，也显示默认图片
+                    document.getElementById('defaultImage').style.display = 'block';
+                });
         };
+    </script>
     </script>
 </body>
 </html>

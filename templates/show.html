@@ -7,31 +7,43 @@
             color: white; /* 设置文字颜色为白色 */
             background-color: #333; /* 设置背景颜色为暗色 */
             font-family: Arial, sans-serif; /* 可选：设置字体 */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        /* 其他样式根据需要添加 */
+
+        .container {
+            max-width: 600px; /* 最大宽度，可根据需要调整 */
+            margin: 20px auto; /* 上下保持原样，左右自动调整以居中 */
+            text-align: left; /* 内容左对齐 */
+            padding: 20px; /* 内边距 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 可选：添加阴影效果 */
+        }
     </style>
 </head>
 <body>
-    <!-- 添加回到首页的链接 -->
-    <!-- <a href="{{ url_for('index') }}">Back</a> -->
-    {% if node %}
-        <mark>{{ node.labels | join(', ')}}</mark>
-        <h2>{{ node.name }}</h2>
-        <ul>
-            {% for key, value in node.items() %}
-                {% if key != 'last_updated' %}
-                    <li>{{ key }}: {{ value }}</li>
+    <div class="container">
+        <!-- 添加回到首页的链接 -->
+        <!-- <a href="{{ url_for('index') }}">Back</a> -->
+        {% if node %}
+            <mark>{{ node.labels | join(', ')}}</mark>
+            <h2>{{ node.name }}</h2>
+            <ul>
+                {% for key, value in node.items() %}
+                    {% if key != 'last_updated' %}
+                        <li>{{ key }}: {{ value }}</li>
+                    {% endif %}
+                {% endfor %}
+                <!-- 单独处理并格式化 last_updated -->
+                {% if 'last_updated' in node %}
+                    <li>Last Updated: {{ node['last_updated'] | dateformat }}</li>
                 {% endif %}
-            {% endfor %}
-            <!-- 单独处理并格式化 last_updated -->
-            {% if 'last_updated' in node %}
-                <li>Last Updated: {{ node['last_updated'] | dateformat }}</li>
-            {% endif %}
-        </ul>
-        <!-- 添加指向 update 页面的链接 -->
-        <a href="{{ url_for('update', id=node.id) }}">Update</a>
-    {% else %}
-        <p>Node not found.</p>
-    {% endif %}
+            </ul>
+            <!-- 添加指向 update 页面的链接 -->
+            <a href="{{ url_for('update', id=node.id) }}">Update</a>
+        {% else %}
+            <p>Node not found.</p>
+        {% endif %}
+    </div>
 </body>
 </html>
