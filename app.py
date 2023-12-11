@@ -60,6 +60,7 @@ def index(selected_label=None):
 
     return render_template('admin.html', nodes=nodes, labels=labels, selected_label=selected_label, search_query=search_query)
 
+
 @app.route('/show/<int:id>', methods=['GET'])
 def show(id):
     """显示特定节点的详细信息。"""
@@ -73,6 +74,7 @@ def show(id):
         node = None
 
     return render_template('show.html', node=node)
+
 
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
 def update(id):
@@ -120,8 +122,6 @@ def update(id):
     return render_template('update.html', node=node, node_id=id)
 
 
-
-
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete(id):
     """删除特定节点。"""
@@ -132,7 +132,6 @@ def delete(id):
         print(f"Error deleting node: {e}")
 
     return redirect(url_for('index'))
-
 
 
 # 将搜索页面设为主页
@@ -175,7 +174,6 @@ def get_labels():
         return jsonify({"error": str(e)}), 500
 
 
-
 # 定义日期格式化过滤器
 @app.template_filter('dateformat')
 def dateformat(value, format='%Y-%m-%d %H:%M:%S'):
@@ -194,7 +192,6 @@ def dateformat(value, format='%Y-%m-%d %H:%M:%S'):
         except ValueError:
             return value
     return value.strftime(format) if value else ''
-
 
 
 if __name__ == '__main__':
