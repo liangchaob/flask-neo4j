@@ -18,6 +18,45 @@
             justify-content: space-between;
             margin-bottom: 10px;
         }
+        body {
+            color: white; /* 设置文字颜色为白色 */
+            background-color: #333; /* 设置背景颜色为暗色 */
+            /* 其他样式... */
+        }
+        /* 其他 CSS 样式... */
+        a {
+            color: white;
+        }
+        a:hover {
+            color: #ddd;
+        }
+        /* 设置列表项中的元素为内联显示 */
+        .admin-list li {
+            /* 样式设置 */
+        }
+        .admin-list li mark, .admin-list li strong, .admin-list li a, .admin-list li form {
+            display: inline; /* 设置为内联元素 */
+            margin-right: 10px; /* 右边距，用于元素间的间隔 */
+        }
+        .admin-list li form {
+            display: inline-block; /* 若需要，可调整为内联块级元素 */
+            vertical-align: top; /* 若需要，可调整垂直对齐 */
+        }
+
+        /* 定义按钮样式 */
+        .button {
+            display: inline-block;
+            padding: 1px 6px;
+            background-color: #eee; /* 按钮背景色 */
+            color: #000; /* 按钮文字颜色 */
+            text-decoration: none; /* 移除下划线 */
+            font-size: x-small;
+            border: none;
+            cursor: pointer; 手形光标
+        }
+        .button:hover {
+            background-color: #45a049; /* 悬停时的背景色 */
+        }
     </style>
     <script>
         function addAttribute() {
@@ -94,10 +133,10 @@
             <ul>
                 {% for node in nodes %}
                     <li>
-                        <mark>{{ node.labels | join(', ') }}</mark> <strong>{{ node.name }}</strong> 
-                        <a href="{{ url_for('show', id=node.id) }}" target="_blank">Show</a>
-                        <a href="{{ url_for('update', id=node.id) }}" target="_blank">Update</a>
-                        <form method="post" action="{{ url_for('delete', id=node.id) }}">
+                        <mark>{{ node.labels | join(', ') }}</mark> 
+                        <a href="{{ url_for('show', id=node.id) }}" target="_blank"><strong>{{ node.name }}</strong></a>
+                        <a href="{{ url_for('update', id=node.id) }}" target="_blank" class="button">Update</a>
+                        <form method="post" action="{{ url_for('delete', id=node.id) }}" style="display: inline;">
                             <input type="submit" value="Delete">
                         </form>
                     </li>

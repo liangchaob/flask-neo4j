@@ -2,6 +2,13 @@
 <html>
 <head>
     <title>Show {{ node.name if node }}</title>
+    <style>
+        body {
+            color: white; /* 设置文字颜色为白色 */
+            background-color: #333; /* 设置背景颜色为暗色 */
+            font-family: Arial, sans-serif; /* 可选：设置字体 */
+        }
+    </style>
     <script>
         function addAttribute() {
             var container = document.getElementById("attribute-container");
@@ -22,7 +29,7 @@
     </script>
 </head>
 <body>
-    <a href="{{ url_for('index') }}">Back</a>
+    <a href="{{ url_for('index') }}">Admin Panel</a>
     {% if node %}
         <form method="post">
             <label for="attr_name">name:</label>

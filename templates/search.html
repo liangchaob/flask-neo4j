@@ -6,12 +6,23 @@
         body {
             text-align: center; /* 居中对齐 */
             font-family: Arial, sans-serif; /* 字体样式 */
+            color: white; /* 设置文字颜色为白色 */
+            background-color: #333; /* 设置背景颜色为暗色 */
         }
         #searchForm {
             margin-top: 20px;
         }
+        /* 设置搜索结果的样式 */
         #results {
+            display: inline-block; /* 使容器成为内联块 */
+            text-align: left; /* 左对齐容器内的元素 */
             margin-top: 20px;
+            margin-left: auto; /* 与右边距一起实现居中 */
+            margin-right: auto;
+        }
+
+        #results p {
+            margin: 5px 0; /* 设置段落间距 */
         }
         .tab {
             cursor: pointer; /* 鼠标悬停时的手势 */
@@ -27,6 +38,25 @@
             position: absolute;
             right: 10px;
             top: 10px;
+        }
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            color: white; /* 设置标签文字颜色为白色 */
+            background-color: #555; /* 设置非活动标签的背景颜色为深色 */
+        }
+        .tab.active {
+            background-color: #999; /* 设置活动标签的背景颜色为浅色 */
+            color: black; /* 设置活动标签的文字颜色为黑色 */
+        }
+        /* 为链接添加白色样式，确保它们在暗色背景上可见 */
+        a {
+            color: white;
+        }
+        a:hover {
+            color: #ddd;
         }
     </style>
 </head>
@@ -77,7 +107,7 @@
             var tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => {
                 tab.classList.remove('active');
-                if (tab.textContent === label || (label === '' && tab.textContent === 'All Labels')) {
+                if (tab.textContent === label || (label === '' && tab.textContent === 'All')) {
                     tab.classList.add('active');
                 }
             });
@@ -96,7 +126,7 @@
                         // 添加 target="_blank" 以在新标签页中打开链接
                         var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
                         var nodeLabels = node.labels.join(', ');
-                        resultsDiv.innerHTML += `<p>${nodeLink} <mark>${nodeLabels}</mark></p>`;
+                        resultsDiv.innerHTML += `<p><mark>${nodeLabels}</mark> ${nodeLink}</p>`;
                     });
                 })
                 .catch(error => console.error('Error:', error));
