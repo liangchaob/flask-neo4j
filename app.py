@@ -13,8 +13,8 @@ try:
 except exceptions.ServiceUnavailable as e:
     raise SystemExit("Failed to connect to Neo4j database.") from e
 
-@app.route('/', methods=['GET', 'POST'])
-@app.route('/filter/<selected_label>', methods=['GET'])
+@app.route('/admin', methods=['GET', 'POST'])
+@app.route('/admin/filter/<selected_label>', methods=['GET'])
 def index(selected_label=None):
     """处理首页的请求，显示所有节点或根据标签过滤节点。"""
     search_query = request.args.get('search', '')  # 获取搜索查询参数
@@ -58,7 +58,7 @@ def index(selected_label=None):
     except Exception as e:
         print(f"Error: {e}")
 
-    return render_template('index.html', nodes=nodes, labels=labels, selected_label=selected_label, search_query=search_query)
+    return render_template('admin.html', nodes=nodes, labels=labels, selected_label=selected_label, search_query=search_query)
 
 @app.route('/show/<int:id>', methods=['GET'])
 def show(id):
@@ -135,8 +135,8 @@ def delete(id):
 
 
 
-# 搜索页
-@app.route('/searchpage')
+# 将搜索页面设为主页
+@app.route('/')
 def search_page():
     return render_template('search.html')
 

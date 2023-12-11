@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>flask-neo4j</title>
+    <title>Show {{ node.name if node }}</title>
 </head>
 <body>
     <!-- 添加回到首页的链接 -->
     <!-- <a href="{{ url_for('index') }}">Back</a> -->
     {% if node %}
-        <h6>{{ node.labels | join(', ') }}</h6>
+        <mark>{{ node.labels | join(', ')}}</mark>
         <h2>{{ node.name }}</h2>
         <ul>
             {% for key, value in node.items() %}

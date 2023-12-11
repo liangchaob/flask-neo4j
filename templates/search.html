@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Search Nodes</title>
+    <title>Search</title>
     <style>
         body {
             text-align: center; /* 居中对齐 */
@@ -22,9 +22,20 @@
         .tab.active {
             background-color: #f0f0f0; /* 活动标签的背景颜色 */
         }
+        /* 添加用于定位链接的 CSS */
+        .top-right {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
     </style>
 </head>
 <body>
+    <!-- 使用 top-right 类来定位链接 -->
+    <div class="top-right">
+        <a href="/admin">Admin Panel</a>
+    </div>
+
     <div id="tabs">
         <!-- 动态生成标签，初始时选中 'All Labels' -->
         <span class="tab active" onclick="selectTab('')">All</span>
@@ -85,7 +96,7 @@
                         // 添加 target="_blank" 以在新标签页中打开链接
                         var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
                         var nodeLabels = node.labels.join(', ');
-                        resultsDiv.innerHTML += `<p>${nodeLink} - Labels: ${nodeLabels}</p>`;
+                        resultsDiv.innerHTML += `<p>${nodeLink} <mark>${nodeLabels}</mark></p>`;
                     });
                 })
                 .catch(error => console.error('Error:', error));

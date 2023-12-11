@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>flask-neo4j</title>
+    <title>Admin</title>
     <style>
         .container {
             display: flex;
@@ -83,6 +83,10 @@
                     </form>
                 </div>
 
+                <div>
+                    <a href="/">Home</a>
+                </div>
+
             </div>
 
             <!-- 节点列表 -->
@@ -90,9 +94,9 @@
             <ul>
                 {% for node in nodes %}
                     <li>
-                        {{ node.name }} - Labels: {{ node.labels | join(', ') }}
-                        <a href="{{ url_for('show', id=node.id) }}">Show</a>
-                        <a href="{{ url_for('update', id=node.id) }}">Update</a>
+                        <mark>{{ node.labels | join(', ') }}</mark> <strong>{{ node.name }}</strong> 
+                        <a href="{{ url_for('show', id=node.id) }}" target="_blank">Show</a>
+                        <a href="{{ url_for('update', id=node.id) }}" target="_blank">Update</a>
                         <form method="post" action="{{ url_for('delete', id=node.id) }}">
                             <input type="submit" value="Delete">
                         </form>
