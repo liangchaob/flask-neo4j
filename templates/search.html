@@ -2,19 +2,76 @@
 <html>
 <head>
     <title>Search Nodes</title>
+    <style>
+        body {
+            text-align: center; /* 居中对齐 */
+            font-family: Arial, sans-serif; /* 字体样式 */
+        }
+        #searchForm {
+            margin-top: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .tab {
+            cursor: pointer; /* 鼠标悬停时的手势 */
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block; /* 使标签并排显示 */
+        }
+        .tab.active {
+            background-color: #f0f0f0; /* 活动标签的背景颜色 */
+        }
+    </style>
 </head>
 <body>
+    <div id="tabs">
+        <!-- 动态生成标签，初始时选中 'All Labels' -->
+        <span class="tab active" onclick="selectTab('')">All</span>
+    </div>
+
     <form id="searchForm">
         <input type="text" id="keyword" placeholder="Enter keyword">
-        <select id="label">
-            <option value="">All Labels</option>
-            <!-- 这里填充其他标签选项 -->
-        </select>
+        <input type="hidden" id="label" value=""> <!-- 隐藏的标签输入，由 JavaScript 控制 -->
         <button type="submit">Search</button>
     </form>
+
     <div id="results"></div>
 
     <script>
+        // 当文档加载完成时，获取并显示所有标签
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/labels')
+                .then(response => response.json())
+                .then(data => {
+                    var tabsDiv = document.getElementById('tabs');
+                    data.forEach(label => {
+                        var span = document.createElement('span');
+                        span.className = 'tab';
+                        span.textContent = label;
+                        span.onclick = function() { selectTab(label); };
+                        tabsDiv.appendChild(span);
+                    });
+                    // 默认激活 'All Labels' 标签
+                    selectTab('');
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+
+
+        function selectTab(label) {
+            document.getElementById('label').value = label;
+            // 更新选中标签的样式
+            var tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent === label || (label === '' && tab.textContent === 'All Labels')) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+
         document.getElementById('searchForm').onsubmit = function(event) {
             event.preventDefault();
             var keyword = document.getElementById('keyword').value;
@@ -25,7 +82,10 @@
                     var resultsDiv = document.getElementById('results');
                     resultsDiv.innerHTML = '';
                     data.forEach(node => {
-                        resultsDiv.innerHTML += `<p>${node.name} - ${node.labels.join(', ')}</p>`;
+                        // 添加 target="_blank" 以在新标签页中打开链接
+                        var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
+                        var nodeLabels = node.labels.join(', ');
+                        resultsDiv.innerHTML += `<p>${nodeLink} - Labels: ${nodeLabels}</p>`;
                     });
                 })
                 .catch(error => console.error('Error:', error));

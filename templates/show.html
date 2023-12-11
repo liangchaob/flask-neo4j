@@ -5,7 +5,7 @@
 </head>
 <body>
     <!-- 添加回到首页的链接 -->
-    <a href="{{ url_for('index') }}">Back</a>
+    <!-- <a href="{{ url_for('index') }}">Back</a> -->
     {% if node %}
         <h6>{{ node.labels | join(', ') }}</h6>
         <h2>{{ node.name }}</h2>

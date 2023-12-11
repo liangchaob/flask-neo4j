@@ -133,18 +133,7 @@ def delete(id):
 
     return redirect(url_for('index'))
 
-@app.route('/labels', methods=['GET'])
-def list_labels():
-    """显示数据库中所有唯一的标签。"""
-    try:
-        with driver.session() as session:
-            result = session.run("CALL db.labels()")
-            labels = [record["label"] for record in result]
-    except Exception as e:
-        print(f"Error retrieving labels: {e}")
-        labels = []
 
-    return render_template('labels.html', labels=labels)
 
 # 搜索页
 @app.route('/searchpage')
@@ -173,6 +162,17 @@ def search():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# 所有的label
+@app.route('/labels')
+def get_labels():
+    try:
+        with driver.session() as session:
+            result = session.run("CALL db.labels()")
+            labels = [record["label"] for record in result]
+        return jsonify(labels)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 
