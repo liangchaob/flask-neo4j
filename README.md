@@ -11,7 +11,7 @@
 * **删除节点** ：用户可以删除特定节点。
 * **查看标签** ：用户可以查看数据库中所有唯一标签的列表。
 
-![demo](http://ipic-liangchao.test.upcdn.net/GIF%202023-12-12%200-44-06.gif)
+![demo](http://ipic-liangchao.test.upcdn.net/demo.gif)
 
 ## 初始配置方法
 
