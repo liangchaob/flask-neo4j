@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from neo4j import GraphDatabase, exceptions
 from config import NEO4J_USERNAME, NEO4J_PASSWORD
 from datetime import datetime
@@ -145,6 +145,35 @@ def list_labels():
         labels = []
 
     return render_template('labels.html', labels=labels)
+
+# 搜索页
+@app.route('/searchpage')
+def search_page():
+    return render_template('search.html')
+
+
+# 搜索接口
+@app.route('/search', methods=['GET'])
+def search():
+    keyword = request.args.get('keyword', '')  # 获取搜索关键词
+    label = request.args.get('label', '')      # 获取可选的标签
+
+    try:
+        with driver.session() as session:
+            query = "MATCH (n) "
+            if label:
+                query += f"WHERE '{label}' IN labels(n) AND "
+            else:
+                query += "WHERE "
+            query += "any(prop IN keys(n) WHERE n[prop] CONTAINS $keyword) "
+            query += "RETURN n.name, labels(n), ID(n)"
+            result = session.run(query, keyword=keyword)
+            nodes = [{"name": record["n.name"], "labels": record["labels(n)"], "id": record["ID(n)"]} for record in result]
+        return jsonify(nodes)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 
 # 定义日期格式化过滤器

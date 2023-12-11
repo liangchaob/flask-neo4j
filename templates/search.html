@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Nodes</title>
+</head>
+<body>
+    <form id="searchForm">
+        <input type="text" id="keyword" placeholder="Enter keyword">
+        <select id="label">
+            <option value="">All Labels</option>
+            <!-- 这里填充其他标签选项 -->
+        </select>
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('searchForm').onsubmit = function(event) {
+            event.preventDefault();
+            var keyword = document.getElementById('keyword').value;
+            var label = document.getElementById('label').value;
+            fetch(`/search?keyword=${encodeURIComponent(keyword)}&label=${encodeURIComponent(label)}`)
+                .then(response => response.json())
+                .then(data => {
+                    var resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    data.forEach(node => {
+                        resultsDiv.innerHTML += `<p>${node.name} - ${node.labels.join(', ')}</p>`;
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        };
+    </script>
+</body>
+</html>
