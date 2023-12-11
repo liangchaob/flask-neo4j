@@ -35,13 +35,12 @@ pip install -r requirements.txt
 ```
 
 3. **配置环境变量** ：
-   创建一个 `.config` 文件，并设置以下变量：
+   创建一个 `config.py` 文件，并设置以下变量：
 
 ```
 NEO4J_USERNAME='neo4j'
 NEO4J_PASSWORD='password'
 ```
-
 
 4. **运行应用** ：
 
