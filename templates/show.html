@@ -19,31 +19,92 @@
             padding: 20px; /* 内边距 */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 可选：添加阴影效果 */
         }
+
+        .node-header {
+            max-width: 800px;
+            margin: 20px auto;
+            text-align: left; /* 或者左对齐，根据需要 */
+            padding: 0 20px;
+        }
+
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .node-info {
+            flex: 3; /* 节点信息占据额外空间的 3 份 */
+            padding: 0 10px; /* 内边距 */
+            /* 其他样式 */
+        }
+
+        .edge-info {
+            flex: 2; /* 边信息占据额外空间的 1 份 */
+            padding: 0 10px; /* 内边距 */
+            /* 其他样式 */
+        }
+        a{
+            color: #fff;
+        }
+        .top-right {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- 添加回到首页的链接 -->
-        <!-- <a href="{{ url_for('index') }}">Back</a> -->
-        {% if node %}
-            <mark>{{ node.labels | join(', ')}}</mark>
+    {% if node %}
+        <div class="node-header">
+            <mark>{{ node.labels | join(', ') }}</mark>
             <h2>{{ node.name }}</h2>
-            <ul>
-                {% for key, value in node.items() %}
-                    {% if key != 'last_updated' %}
-                        <li>{{ key }}: {{ value }}</li>
+        </div>
+        <div class="flex-container">
+            <!-- 节点属性容器 -->
+            <div class="node-info">
+                <ul>
+                    {% for key, value in node.items() %}
+                        {% if key != 'last_updated' %}
+                            <li>{{ key }}: {{ value }}</li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if 'last_updated' in node %}
+                        <li>Last Updated: {{ node['last_updated'] | dateformat }}</li>
                     {% endif %}
-                {% endfor %}
-                <!-- 单独处理并格式化 last_updated -->
-                {% if 'last_updated' in node %}
-                    <li>Last Updated: {{ node['last_updated'] | dateformat }}</li>
+                </ul>
+                <a href="{{ url_for('update', id=node.id) }}">Update</a>
+            </div>
+
+            <!-- 边信息容器 -->
+            <div class="edge-info">
+                {% if edges %}
+                    <ul>
+                        {% for edge in edges %}
+                            <li>
+                                {% if edge.direction == 'outgoing' %}
+                                    {{ edge.type }}({{ edge.targets | length }}) &rarr; <!-- 出边，箭头指向外 -->
+                                {% else %}
+                                    &larr; {{ edge.type }}({{ edge.targets | length }}) <!-- 入边，箭头指向内 -->
+                                {% endif %}
+                                <ul>
+                                    {% for target in edge.targets %}
+                                        <li><mark>{{ target.labels | join(', ') }}</mark> <a href="{{ url_for('show', id=target.id) }}">{{ target.name }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
+                    </ul>
                 {% endif %}
-            </ul>
-            <!-- 添加指向 update 页面的链接 -->
-            <a href="{{ url_for('update', id=node.id) }}">Update</a>
-        {% else %}
-            <p>Node not found.</p>
-        {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <p>Node not found.</p>
+    {% endif %}
+
+    <div class="top-right">
+        <a href="/">Home</a>
     </div>
 </body>
 </html>

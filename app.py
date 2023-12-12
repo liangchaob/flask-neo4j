@@ -63,17 +63,33 @@ def index(selected_label=None):
 
 @app.route('/show/<int:id>', methods=['GET'])
 def show(id):
-    """显示特定节点的详细信息。"""
+    """显示特定节点的详细信息和相关边。"""
     try:
         with driver.session() as session:
-            result = session.run("MATCH (n) WHERE ID(n) = $id RETURN n", id=id)
-            data = result.single()
-            node = data["n"] if data else None
-    except Exception as e:
-        print(f"Error retrieving node: {e}")
-        node = None
+            # 获取节点信息
+            node_query = "MATCH (n) WHERE ID(n) = $id RETURN n"
+            node_result = session.run(node_query, id=id)
+            node_data = node_result.single()
+            node = node_data["n"] if node_data else None
 
-    return render_template('show.html', node=node)
+            # 获取与节点相关的双向边信息
+            edges_query = """
+            MATCH (n)-[r]->(m) WHERE ID(n) = $id 
+            RETURN type(r) as type, collect({id: ID(m), name: m.name, labels: labels(m)}) as targets, 'outgoing' as direction
+            UNION
+            MATCH (n)<-[r]-(m) WHERE ID(n) = $id 
+            RETURN type(r) as type, collect({id: ID(m), name: m.name, labels: labels(m)}) as targets, 'incoming' as direction
+            """
+            edges_result = session.run(edges_query, id=id)
+            edges = [{"type": record["type"], "targets": record["targets"], "direction": record["direction"]} for record in edges_result]
+
+    except Exception as e:
+        print(f"Error retrieving node or edges: {e}")
+        node = None
+        edges = []
+
+    return render_template('show.html', node=node, edges=edges)
+
 
 
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
