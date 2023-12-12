@@ -48,16 +48,12 @@
         a{
             color: #fff;
         }
-        .top-right {
-            position: absolute;
-            right: 10px;
-            top: 10px;
-        }
     </style>
 </head>
 <body>
     {% if node %}
         <div class="node-header">
+            <a href="/">Home</a>/
             <mark>{{ node.labels | join(', ') }}</mark>
             <h2>{{ node.name }}</h2>
         </div>
@@ -66,7 +62,7 @@
             <div class="node-info">
                 <ul>
                     {% for key, value in node.items() %}
-                        {% if key != 'last_updated' %}
+                        {% if key != 'last_updated' and key != 'name'%}
                             <li>{{ key }}: {{ value }}</li>
                         {% endif %}
                     {% endfor %}
@@ -102,9 +98,5 @@
     {% else %}
         <p>Node not found.</p>
     {% endif %}
-
-    <div class="top-right">
-        <a href="/">Home</a>
-    </div>
 </body>
 </html>
