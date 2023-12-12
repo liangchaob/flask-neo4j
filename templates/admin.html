@@ -84,8 +84,8 @@
             <!-- <h2>Labels</h2> -->
             <ul>
                 <li><a href="{{ url_for('index') }}">All</a></li>
-                {% for label in labels %}
-                    <li><a href="{{ url_for('index', selected_label=label) }}">{{ label }}</a></li>
+                {% for item in labels_with_counts %}
+                    <li><a href="{{ url_for('index', selected_label=item.label) }}">{{ item.label }} ({{ item.count }})</a></li>
                 {% endfor %}
             </ul>
         </div>

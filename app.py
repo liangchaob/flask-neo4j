@@ -37,7 +37,7 @@ def index(selected_label=None):
             print(f"Error creating node: {e}")
 
     nodes = []
-    labels = []
+    labels_with_counts = []
     try:
         with driver.session() as session:
             # 构建查询以检索节点
@@ -51,15 +51,14 @@ def index(selected_label=None):
                     continue
                 nodes.append({"id": record["id"], "name": record["n.name"], "labels": node_labels, "last_updated": record["n.last_updated"]})
 
-            # 获取所有独特的标签
-            label_query = "CALL db.labels()"
-            label_result = session.run(label_query)
-            labels = [record["label"] for record in label_result]
+            # 获取每个标签及其对应的节点数
+            labels_result = session.run("MATCH (n) UNWIND labels(n) AS label RETURN label, COUNT(n) AS count")
+            labels_with_counts = [{"label": record["label"], "count": record["count"]} for record in labels_result]
+
     except Exception as e:
         print(f"Error: {e}")
 
-    return render_template('admin.html', nodes=nodes, labels=labels, selected_label=selected_label, search_query=search_query)
-
+    return render_template('admin.html', nodes=nodes, labels_with_counts=labels_with_counts, selected_label=selected_label, search_query=search_query)
 
 @app.route('/show/<int:id>', methods=['GET'])
 def show(id):
@@ -178,16 +177,21 @@ def search():
         return jsonify({"error": str(e)}), 500
 
 
-# 所有的label
 @app.route('/labels')
 def get_labels():
     try:
         with driver.session() as session:
             result = session.run("CALL db.labels()")
-            labels = [record["label"] for record in result]
-        return jsonify(labels)
+            labels_with_counts = []
+            for record in result:
+                label = record["label"]
+                count_result = session.run(f"MATCH (n:`{label}`) RETURN count(n) as count")
+                count = count_result.single()["count"]
+                labels_with_counts.append({"label": label, "count": count})
+            return jsonify(labels_with_counts)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 # 定义日期格式化过滤器

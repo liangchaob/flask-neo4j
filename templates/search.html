@@ -24,15 +24,6 @@
         #results p {
             margin: 5px 0; /* 设置段落间距 */
         }
-        .tab {
-            cursor: pointer; /* 鼠标悬停时的手势 */
-            padding: 10px;
-            border: 1px solid #ccc;
-            display: inline-block; /* 使标签并排显示 */
-        }
-        .tab.active {
-            background-color: #f0f0f0; /* 活动标签的背景颜色 */
-        }
         /* 添加用于定位链接的 CSS */
         .top-right {
             position: absolute;
@@ -80,7 +71,7 @@
     <div class="fixed-top">
         <!-- 使用 top-right 类来定位链接 -->
         <div class="top-right">
-            <a href="/admin">Admin Panel</a>
+            <a href="/admin">Admin</a>
         </div>
 
         <div id="tabs">
@@ -109,24 +100,24 @@
 
 
     <script>
-        // 当文档加载完成时，获取并显示所有标签
+        // 当文档加载完成时，获取并显示所有标签及其节点数量
         document.addEventListener('DOMContentLoaded', function() {
             fetch('/labels')
                 .then(response => response.json())
                 .then(data => {
                     var tabsDiv = document.getElementById('tabs');
-                    data.forEach(label => {
+                    data.forEach(item => {
                         var span = document.createElement('span');
                         span.className = 'tab';
-                        span.textContent = label;
-                        span.onclick = function() { selectTab(label); };
+                        span.textContent = `${item.label} ${item.count}`; // 显示标签和节点数量
+                        span.onclick = function() { selectTab(item.label); };
                         tabsDiv.appendChild(span);
                     });
-                    // 默认激活 'All Labels' 标签
-                    selectTab('');
+                    selectTab(''); // 默认激活 'All Labels' 标签
                 })
                 .catch(error => console.error('Error:', error));
         });
+
 
 
 
@@ -136,11 +127,14 @@
             var tabs = document.querySelectorAll('.tab');
             tabs.forEach(tab => {
                 tab.classList.remove('active');
-                if (tab.textContent === label || (label === '' && tab.textContent === 'All')) {
+                // 只比较标签名部分，忽略后面的节点数
+                var tabLabel = tab.textContent.split(' ')[0];
+                if (tabLabel === label || (label === '' && tabLabel === 'All')) {
                     tab.classList.add('active');
                 }
             });
         }
+
 
         document.getElementById('searchForm').onsubmit = function(event) {
             event.preventDefault();
