@@ -195,3 +195,13 @@ CREATE
 (RegionT)-[:规划]->(Product14),
 (RegionV)-[:规划]->(Product15),
 (RegionU)-[:规划]->(Product16)
+
+
+// 补充更新时间
+WITH *
+MATCH (n)
+WHERE n.last_updated IS NULL
+SET n.last_updated = datetime()
+
+WITH *
+MATCH (n) RETURN n
