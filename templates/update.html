@@ -19,6 +19,9 @@
             padding: 20px; /* 内边距 */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 可选：添加阴影效果 */
         }
+        a{
+            color: #fff;
+        }
     </style>
     <script>
         function addAttribute() {
@@ -42,6 +45,7 @@
 <body>
     <div class="container">
         <a href="{{ url_for('index') }}">Admin Panel</a>
+        <h3>Attribute</h3>
         {% if node %}
             <form method="post">
                 <label for="attr_name">name:</label>
@@ -61,7 +65,57 @@
         {% else %}
             <p>Node not found.</p>
         {% endif %}
+
+        <!-- update.html 中的相关部分 -->
+        {% if relationships %}
+            <h3>Relationships</h3>
+            <ul>
+                {% for rel in relationships %}
+                    <li>
+                        {{ rel.type }} 
+                        {% if rel.direction == 'outgoing' %}
+                            to <a href="{{ url_for('show', id=rel.target_id) }}">{{ rel.target_name }}</a> (outgoing)
+                        {% else %}
+                            from <a href="{{ url_for('show', id=rel.source_id) }}">{{ rel.source_name }}</a> (incoming)
+                        {% endif %}
+                        <!-- 删除关系的表单 -->
+                        <form method="post" action="{{ url_for('delete_relationship', node_id=node_id, target_id=(rel.direction == 'outgoing' and rel.target_id or rel.source_id), relation_type=rel.type) }}" style="display: inline;">
+                            <input type="submit" value="Delete">
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- update.html 中添加新关系的部分 -->
+            <form method="post" action="{{ url_for('update_relationship', id=node_id) }}">
+                <input type="text" name="relation_type" placeholder="Relationship Type">
+                <input type="text" id="searchNode" placeholder="Search Node">
+                <select id="nodeList" name="target_id"></select>
+                <input type="submit" value="Add Relationship">
+            </form>
+
+        {% endif %}
+
     </div>
 
+    <script>
+        document.getElementById('searchNode').oninput = function() {
+            const searchQuery = this.value;
+
+            fetch(`/search_nodes?query=${encodeURIComponent(searchQuery)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const nodeList = document.getElementById('nodeList');
+                    nodeList.innerHTML = '';
+                    data.forEach(node => {
+                        const option = document.createElement('option');
+                        option.value = node.id;
+                        option.textContent = node.name;
+                        nodeList.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        };
+    </script>
 </body>
 </html>

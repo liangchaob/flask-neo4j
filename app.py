@@ -125,16 +125,43 @@ def update(id):
 
     # 准备更新页面的初始数据
     node = None
+    relationships = []
     try:
         with driver.session() as session:
-            result = session.run("MATCH (n) WHERE ID(n) = $id RETURN n", id=id)
-            single_result = result.single()
-            if single_result:
-                node = single_result["n"]
-    except Exception as e:
-        print(f"Error retrieving node for update: {e}")
+            # 获取节点信息
+            node_result = session.run("MATCH (n) WHERE ID(n) = $id RETURN n", id=id)
+            node_data = node_result.single()
+            if node_data:
+                node = node_data["n"]
 
-    return render_template('update.html', node=node, node_id=id)
+            # 获取节点的所有出站关系（即节点是关系的起点）
+            outgoing_rels = session.run(
+                "MATCH (n)-[r]->(m) WHERE ID(n) = $id "
+                "RETURN TYPE(r) AS type, ID(m) AS target_id, m.name AS target_name", 
+                id=id
+            )
+
+            # 获取节点的所有入站关系（即节点是关系的终点）
+            incoming_rels = session.run(
+                "MATCH (n)<-[r]-(m) WHERE ID(n) = $id "
+                "RETURN TYPE(r) AS type, ID(m) AS source_id, m.name AS source_name", 
+                id=id
+            )
+
+            # 合并这两个结果
+            relationships = [
+                {"type": record["type"], "target_id": record["target_id"], "target_name": record["target_name"], "direction": "outgoing"}
+                for record in outgoing_rels
+            ]
+            relationships += [
+                {"type": record["type"], "source_id": record["source_id"], "source_name": record["source_name"], "direction": "incoming"}
+                for record in incoming_rels
+            ]
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    return render_template('update.html', node=node, node_id=id, relationships=relationships)
 
 
 @app.route('/delete/<int:id>', methods=['POST'])
@@ -191,6 +218,64 @@ def get_labels():
             return jsonify(labels_with_counts)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route('/update_relationship/<int:id>', methods=['POST'])
+def update_relationship(id):
+    relation_type = request.form['relation_type']
+    target_id = int(request.form['target_id'])
+
+    try:
+        with driver.session() as session:
+            # 添加新关系
+            session.run(
+                "MATCH (n), (m) WHERE ID(n) = $node_id AND ID(m) = $target_id "
+                "MERGE (n)-[r:`{relation_type}`]->(m)", 
+                node_id=id, target_id=target_id, relation_type=relation_type
+            )
+    except Exception as e:
+        print(f"Error updating relationship: {e}")
+
+    return redirect(url_for('update', id=id))
+
+# 按照名称搜索节点
+@app.route('/search_nodes', methods=['GET'])
+def search_nodes():
+    query = request.args.get('query', '')
+
+    try:
+        with driver.session() as session:
+            result = session.run(
+                "MATCH (n) WHERE n.name CONTAINS $queryParam RETURN ID(n) AS id, n.name LIMIT 10", 
+                queryParam=query
+            )
+            nodes = [{"id": record["id"], "name": record["n.name"]} for record in result]
+        return jsonify(nodes)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# TODO
+@app.route('/delete_relationship', methods=['POST'])
+def delete_relationship():
+    from_id = request.form.get('from_id')
+    to_id = request.form.get('to_id')
+    relation_type = request.form.get('relation_type')
+
+    try:
+        with driver.session() as session:
+            session.run(
+                "MATCH (from)-[r:`{relation_type}`]->(to) "
+                "WHERE ID(from) = $from_id AND ID(to) = $to_id "
+                "DELETE r",
+                from_id=int(from_id), to_id=int(to_id), relation_type=relation_type
+            )
+        return redirect(url_for('show', id=from_id))
+    except Exception as e:
+        print(f"Error deleting relationship: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 
 
 
