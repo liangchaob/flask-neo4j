@@ -22,6 +22,12 @@
         a{
             color: #fff;
         }
+        .relationship-link, .relationship-delete-form {
+            display: inline-block; /* 设置为内联块级元素，以便并排显示 */
+            vertical-align: top; /* 顶部对齐，如果需要的话 */
+            margin-right: 10px; /* 在元素之间添加一些间距 */
+        }
+
     </style>
     <script>
         function addAttribute() {
@@ -74,12 +80,15 @@
                     <li>
                         {{ rel.type }} 
                         {% if rel.direction == 'outgoing' %}
-                            to <a href="{{ url_for('show', id=rel.target_id) }}">{{ rel.target_name }}</a> (outgoing)
+                        &rarr; <a href="{{ url_for('show', id=rel.target_id) }}" class="relationship-link">{{ rel.target_name }}</a>
                         {% else %}
-                            from <a href="{{ url_for('show', id=rel.source_id) }}">{{ rel.source_name }}</a> (incoming)
+                        &larr; <a href="{{ url_for('show', id=rel.source_id) }}" class="relationship-link">{{ rel.source_name }}</a>
                         {% endif %}
                         <!-- 删除关系的表单 -->
-                        <form method="post" action="{{ url_for('delete_relationship', node_id=node_id, target_id=(rel.direction == 'outgoing' and rel.target_id or rel.source_id), relation_type=rel.type) }}" style="display: inline;">
+                        <form method="post" action="{{ url_for('delete_relationship') }}" class="relationship-delete-form">
+                            <input type="hidden" name="relation_id" value="{{ rel.relation_id }}">
+                            <input type="hidden" name="node_id" value="{{ node_id }}">
+                            <input type="hidden" name="direction" value="{{ rel.direction }}">
                             <input type="submit" value="Delete">
                         </form>
                     </li>

@@ -137,24 +137,24 @@ def update(id):
             # 获取节点的所有出站关系（即节点是关系的起点）
             outgoing_rels = session.run(
                 "MATCH (n)-[r]->(m) WHERE ID(n) = $id "
-                "RETURN TYPE(r) AS type, ID(m) AS target_id, m.name AS target_name", 
+                "RETURN TYPE(r) AS type, ID(r) AS relation_id, ID(m) AS target_id, m.name AS target_name", 
                 id=id
             )
 
             # 获取节点的所有入站关系（即节点是关系的终点）
             incoming_rels = session.run(
                 "MATCH (n)<-[r]-(m) WHERE ID(n) = $id "
-                "RETURN TYPE(r) AS type, ID(m) AS source_id, m.name AS source_name", 
+                "RETURN TYPE(r) AS type, ID(r) AS relation_id, ID(m) AS source_id, m.name AS source_name", 
                 id=id
             )
 
             # 合并这两个结果
             relationships = [
-                {"type": record["type"], "target_id": record["target_id"], "target_name": record["target_name"], "direction": "outgoing"}
+                {"type": record["type"], "relation_id": record["relation_id"], "target_id": record["target_id"], "target_name": record["target_name"], "direction": "outgoing"}
                 for record in outgoing_rels
             ]
             relationships += [
-                {"type": record["type"], "source_id": record["source_id"], "source_name": record["source_name"], "direction": "incoming"}
+                {"type": record["type"], "relation_id": record["relation_id"], "source_id": record["source_id"], "source_name": record["source_name"], "direction": "incoming"}
                 for record in incoming_rels
             ]
 
@@ -230,13 +230,15 @@ def update_relationship(id):
             # 添加新关系
             session.run(
                 "MATCH (n), (m) WHERE ID(n) = $node_id AND ID(m) = $target_id "
-                "MERGE (n)-[r:`{relation_type}`]->(m)", 
+                f"MERGE (n)-[r:`{relation_type}`]->(m)", 
                 node_id=id, target_id=target_id, relation_type=relation_type
             )
     except Exception as e:
         print(f"Error updating relationship: {e}")
 
     return redirect(url_for('update', id=id))
+
+
 
 # 按照名称搜索节点
 @app.route('/search_nodes', methods=['GET'])
@@ -255,25 +257,41 @@ def search_nodes():
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
 
-# TODO
+# 删除关系
 @app.route('/delete_relationship', methods=['POST'])
 def delete_relationship():
-    from_id = request.form.get('from_id')
-    to_id = request.form.get('to_id')
-    relation_type = request.form.get('relation_type')
+    relation_id = request.form.get('relation_id')
+    node_id = request.form.get('node_id')
+    direction = request.form.get('direction')
+
+    # 确保 ID 是整数
+    try:
+        relation_id = int(relation_id)
+        node_id = int(node_id)
+    except ValueError:
+        print("Invalid relation_id or node_id")
+        return redirect(url_for('update', id=node_id))
+
+    print(f"Deleting relationship: {relation_id}, Node ID: {node_id}, Direction: {direction}")
 
     try:
         with driver.session() as session:
-            session.run(
-                "MATCH (from)-[r:`{relation_type}`]->(to) "
-                "WHERE ID(from) = $from_id AND ID(to) = $to_id "
-                "DELETE r",
-                from_id=int(from_id), to_id=int(to_id), relation_type=relation_type
-            )
-        return redirect(url_for('show', id=from_id))
+            if direction == 'outgoing':
+                print("Deleting outgoing relationship")
+                result = session.run("MATCH (n)-[r]->() WHERE ID(n) = $node_id AND ID(r) = $relation_id DELETE r RETURN r",
+                            node_id=node_id, relation_id=relation_id)
+                print(f"Deleted relationships: {result.summary().counters.relationships_deleted}")
+            elif direction == 'incoming':
+                print("Deleting incoming relationship")
+                result = session.run("MATCH ()-[r]->(n) WHERE ID(n) = $node_id AND ID(r) = $relation_id DELETE r RETURN r",
+                            node_id=node_id, relation_id=relation_id)
+                print(f"Deleted relationships: {result.summary().counters.relationships_deleted}")
     except Exception as e:
         print(f"Error deleting relationship: {e}")
-        return jsonify({"error": str(e)}), 500
+
+    return redirect(url_for('update', id=node_id))
+
+
 
 
 
