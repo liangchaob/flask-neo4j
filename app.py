@@ -23,7 +23,8 @@ PER_PAGE_LIMIT = 10
 def index(selected_label=None):
     """处理首页的请求，显示所有节点或根据标签过滤节点。"""
     search_query = request.args.get('search', '')  # 获取搜索查询参数
-
+    page = int(request.args.get('page', 1))  # 获取当前页码
+    
     # 处理创建节点的请求
     if request.method == 'POST':
         label = request.form['label']
@@ -45,16 +46,29 @@ def index(selected_label=None):
     labels_with_counts = []
     try:
         with driver.session() as session:
-            # 构建查询以检索节点
-            node_query = "MATCH (n) WHERE n.name CONTAINS $search_query RETURN ID(n) AS id, n.name, labels(n), n.last_updated ORDER BY n.last_updated DESC"
-            node_result = session.run(node_query, search_query=search_query)
+            # 构建基础查询
+            base_query = "MATCH (n)"
+            if selected_label and selected_label != "AllLabels":
+                base_query += f" WHERE '{selected_label}' IN labels(n)"
 
-            # 过滤节点
-            for record in node_result:
-                node_labels = record["labels(n)"]
-                if selected_label and selected_label != "AllLabels" and selected_label not in node_labels:
-                    continue
-                nodes.append({"id": record["id"], "name": record["n.name"], "labels": node_labels, "last_updated": record["n.last_updated"]})
+            # 添加搜索条件
+            if search_query:
+                base_query += f" AND n.name CONTAINS $search_query"
+
+            # 查询总节点数
+            count_query = base_query + " RETURN count(n) as total"
+            total_count_result = session.run(count_query, search_query=search_query)
+            total_count = total_count_result.single()["total"]
+
+            # 计算总页数
+            total_pages = (total_count + PER_PAGE_LIMIT - 1) // PER_PAGE_LIMIT
+
+            # 分页查询节点
+            skip = (page - 1) * PER_PAGE_LIMIT
+            node_query = base_query + " RETURN ID(n) AS id, n.name, labels(n), n.last_updated ORDER BY n.last_updated DESC SKIP $skip LIMIT $limit"
+            node_result = session.run(node_query, search_query=search_query, skip=skip, limit=PER_PAGE_LIMIT)
+
+            nodes = [{"id": record["id"], "name": record["n.name"], "labels": record["labels(n)"], "last_updated": record["n.last_updated"]} for record in node_result]
 
             # 获取每个标签及其对应的节点数
             labels_result = session.run("MATCH (n) UNWIND labels(n) AS label RETURN label, COUNT(n) AS count")
@@ -63,7 +77,7 @@ def index(selected_label=None):
     except Exception as e:
         print(f"Error: {e}")
 
-    return render_template('admin.html', nodes=nodes, labels_with_counts=labels_with_counts, selected_label=selected_label, search_query=search_query)
+    return render_template('admin.html', nodes=nodes, labels_with_counts=labels_with_counts, selected_label=selected_label, search_query=search_query, total_pages=total_pages, current_page=page)
 
 @app.route('/show/<int:id>', methods=['GET'])
 def show(id):

@@ -57,6 +57,25 @@
         .button:hover {
             background-color: #45a049; /* 悬停时的背景色 */
         }
+        /* 分页样式 */
+        .pagination {
+            text-align: left;
+            margin-top: 20px;
+        }
+        .pagination a {
+            color: white;
+            margin: 0 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            background-color: #555; /* 未选中的页码背景色 */
+            border-radius: 5px; /* 圆角 */
+        }
+        .pagination a.active {
+            font-weight: bold;
+            background-color: #999; /* 选中的页码背景色 */
+            color: black;
+        }
+
     </style>
     <script>
         function addAttribute() {
@@ -142,7 +161,30 @@
                     </li>
                 {% endfor %}
             </ul>
+            <!-- 在页面底部添加分页控件的占位符 -->
+            <div id="pagination" class="pagination"></div>
         </div>
     </div>
+
+    <script>
+        // 函数用于渲染分页控件
+        function renderPagination(totalPages, currentPage) {
+            var paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+            
+            for (let i = 1; i <= totalPages; i++) {
+                var pageLink = document.createElement('a');
+                pageLink.href = `?page=${i}&search={{ search_query }}&selected_label={{ selected_label }}`;
+                pageLink.textContent = i;
+                if (i === currentPage) {
+                    pageLink.classList.add('active');
+                }
+                paginationDiv.appendChild(pageLink);
+            }
+        }
+    
+        renderPagination({{ total_pages }}, {{ current_page }});
+    </script>
+
 </body>
 </html>
