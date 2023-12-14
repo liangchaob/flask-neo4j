@@ -159,7 +159,7 @@
         function searchNodes(page = 1) {
             var keyword = document.getElementById('keyword').value;
             var label = document.getElementById('label').value;
-            var limit = 10; // 每页显示的节点数量
+            var limit = 20; // 每页显示的节点数量
 
             fetch(`/search?keyword=${encodeURIComponent(keyword)}&label=${encodeURIComponent(label)}&page=${page}&limit=${limit}`)
                 .then(response => response.json())

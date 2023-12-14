@@ -15,7 +15,7 @@ except exceptions.ServiceUnavailable as e:
     raise SystemExit("Failed to connect to Neo4j database.") from e
 
 # 设置每页显示的节点数量
-PER_PAGE_LIMIT = 10
+PER_PAGE_LIMIT = 20
 
 
 @app.route('/admin', methods=['GET', 'POST'])
