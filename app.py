@@ -3,6 +3,7 @@ from neo4j import GraphDatabase, exceptions
 from config import NEO4J_USERNAME, NEO4J_PASSWORD
 from datetime import datetime
 from neo4j.time import DateTime
+from math import ceil  # 导入向上取整函数
 
 app = Flask(__name__)
 
@@ -12,6 +13,10 @@ try:
     driver = GraphDatabase.driver(uri, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
 except exceptions.ServiceUnavailable as e:
     raise SystemExit("Failed to connect to Neo4j database.") from e
+
+# 设置每页显示的节点数量
+PER_PAGE_LIMIT = 10
+
 
 @app.route('/admin', methods=['GET', 'POST'])
 @app.route('/admin/filter/<selected_label>', methods=['GET'])
@@ -185,23 +190,43 @@ def search_page():
 # 搜索接口
 @app.route('/search', methods=['GET'])
 def search():
-    keyword = request.args.get('keyword', '')  # 获取搜索关键词
-    label = request.args.get('label', '')      # 获取可选的标签
+    keyword = request.args.get('keyword', '')
+    label = request.args.get('label', '')
+    page = int(request.args.get('page', 1))  # 当前页码，默认为第一页
+    limit = int(request.args.get('limit', 10))  # 每页节点数量，默认为10
+
+    skip = (page - 1) * limit  # 计算跳过的节点数量
 
     try:
         with driver.session() as session:
-            query = "MATCH (n) "
+            # 首先计算总节点数
+            count_query = "MATCH (n) WHERE any(prop IN keys(n) WHERE n[prop] CONTAINS $keyword) "
             if label:
-                query += f"WHERE '{label}' IN labels(n) AND "
-            else:
-                query += "WHERE "
-            query += "any(prop IN keys(n) WHERE n[prop] CONTAINS $keyword) "
-            query += "RETURN n.name, labels(n), ID(n)"
-            result = session.run(query, keyword=keyword)
-            nodes = [{"name": record["n.name"], "labels": record["labels(n)"], "id": record["ID(n)"]} for record in result]
-        return jsonify(nodes)
+                count_query += f"AND '{label}' IN labels(n) "
+            count_query += "RETURN count(n) as total"
+            count_result = session.run(count_query, keyword=keyword)
+            total_nodes = count_result.single()[0]
+
+            # 计算总页数
+            total_pages = ceil(total_nodes / limit)
+
+            # 接着获取特定页面的节点数据
+            node_query = "MATCH (n) WHERE any(prop IN keys(n) WHERE n[prop] CONTAINS $keyword) "
+            if label:
+                node_query += f"AND '{label}' IN labels(n) "
+            node_query += "RETURN n.name, labels(n), ID(n) ORDER BY n.name SKIP $skip LIMIT $limit"
+            node_result = session.run(node_query, keyword=keyword, skip=skip, limit=limit)
+            nodes = [{"name": record["n.name"], "labels": record["labels(n)"], "id": record["ID(n)"]} for record in node_result]
+
+            # 返回节点数据和分页信息
+            return jsonify({
+                "nodes": nodes,
+                "totalPages": total_pages,
+                "currentPage": page
+            })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/labels')

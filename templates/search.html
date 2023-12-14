@@ -64,7 +64,24 @@
             text-align:center; 
             margin-top:200px;
         }
-
+        /* 分页样式 */
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination a {
+            color: white;
+            margin: 0 5px;
+            padding: 5px 10px;
+            text-decoration: none;
+            background-color: #555; /* 未选中的页码背景色 */
+            border-radius: 5px; /* 圆角 */
+        }
+        .pagination a.active {
+            font-weight: bold;
+            background-color: #999; /* 选中的页码背景色 */
+            color: black;
+        }
     </style>
 </head>
 <body>
@@ -96,7 +113,10 @@
         <div id="results"></div>
     </div>
 
-        <div id="results"></div>
+    <div id="results"></div>
+    
+    <!-- 分页区域 -->
+    <div id="pagination" class="pagination"></div>
 
 
     <script>
@@ -133,40 +153,86 @@
                     tab.classList.add('active');
                 }
             });
-        }
+        };
 
 
-        document.getElementById('searchForm').onsubmit = function(event) {
-            event.preventDefault();
+        function searchNodes(page = 1) {
             var keyword = document.getElementById('keyword').value;
             var label = document.getElementById('label').value;
-            fetch(`/search?keyword=${encodeURIComponent(keyword)}&label=${encodeURIComponent(label)}`)
+            var limit = 10; // 每页显示的节点数量
+
+            fetch(`/search?keyword=${encodeURIComponent(keyword)}&label=${encodeURIComponent(label)}&page=${page}&limit=${limit}`)
                 .then(response => response.json())
                 .then(data => {
-                    var resultsDiv = document.getElementById('results');
-                    var defaultImageDiv = document.getElementById('defaultImage');
-                    resultsDiv.innerHTML = '';
+                    // 更新搜索结果
+                    updateSearchResults(data.nodes);
 
-                    if (data.length > 0) {
-                        // 有结果时，隐藏默认图片
-                        defaultImageDiv.style.display = 'none';
-                        data.forEach(node => {
-                            var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
-                            var nodeLabels = node.labels.join(', ');
-                            resultsDiv.innerHTML += `<p><mark>${nodeLabels}</mark> ${nodeLink}</p>`;
-                        });
+                    // 只有当总页数大于1时显示分页
+                    if (data.totalPages > 1) {
+                        // 渲染分页
+                        renderPagination(data.totalPages, data.currentPage);
+                        document.getElementById('pagination').style.display = 'block'; // 显示分页栏
                     } else {
-                        // 无结果时，显示默认图片
-                        defaultImageDiv.style.display = 'block';
+                        document.getElementById('pagination').style.display = 'none'; // 隐藏分页栏
                     }
+
+
+                    // 渲染分页
+                    renderPagination(data.totalPages, data.currentPage);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    // 出错时，也显示默认图片
                     document.getElementById('defaultImage').style.display = 'block';
                 });
+        }
+
+        function updateSearchResults(nodes) {
+            var resultsDiv = document.getElementById('results');
+            var defaultImageDiv = document.getElementById('defaultImage');
+            resultsDiv.innerHTML = '';
+
+            if (nodes && nodes.length > 0) {
+                defaultImageDiv.style.display = 'none';
+                nodes.forEach(node => {
+                    var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
+                    var nodeLabels = node.labels.join(', ');
+                    resultsDiv.innerHTML += `<p><mark>${nodeLabels}</mark> ${nodeLink}</p>`;
+                });
+            } else {
+                defaultImageDiv.style.display = 'block';
+            }
+        }
+
+        function renderPagination(totalPages, currentPage) {
+            var paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                var pageLink = document.createElement('a');
+                pageLink.href = '#';
+                pageLink.textContent = i;
+                pageLink.onclick = function(event) {
+                    event.preventDefault();
+                    searchNodes(i);
+                };
+
+                if (i === currentPage) {
+                    pageLink.className = 'active';
+                }
+
+                paginationDiv.appendChild(pageLink);
+            }
+        }
+
+        document.getElementById('searchForm').onsubmit = function(event) {
+            event.preventDefault();
+            searchNodes(); // 调用分页搜索函数
         };
-    </script>
+
+
+        
+
+        
     </script>
 </body>
 </html>
