@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from neo4j import GraphDatabase, exceptions
-from config import NEO4J_USERNAME, NEO4J_PASSWORD
+from config import NEO4J_USERNAME, NEO4J_PASSWORD, NEO4J_HOST, NEO4J_PORT
 from datetime import datetime
 from neo4j.time import DateTime
 from math import ceil  # 导入向上取整函数
@@ -8,7 +8,7 @@ from math import ceil  # 导入向上取整函数
 app = Flask(__name__)
 
 # 初始化 Neo4j 数据库连接
-uri = "bolt://localhost:7687"
+uri = "bolt://"+ NEO4J_HOST + ":" + NEO4J_PORT
 try:
     driver = GraphDatabase.driver(uri, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
 except exceptions.ServiceUnavailable as e:

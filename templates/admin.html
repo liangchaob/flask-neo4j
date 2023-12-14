@@ -152,7 +152,9 @@
             <ul>
                 {% for node in nodes %}
                     <li>
-                        <mark>{{ node.labels | join(', ') }}</mark> 
+                        {% for label in  node.labels %}
+                            <mark>{{ label }}</mark>
+                        {% endfor %}
                         <a href="{{ url_for('show', id=node.id) }}" target="_blank"><strong>{{ node.name }}</strong></a>
                         <a href="{{ url_for('update', id=node.id) }}" target="_blank" class="button">Update</a>
                         <form method="post" action="{{ url_for('delete', id=node.id) }}" style="display: inline;">

@@ -54,7 +54,9 @@
     {% if node %}
         <div class="node-header">
             <a href="/">Home</a>/
-            <mark>{{ node.labels | join(', ') }}</mark>
+            {% for label in node.labels %}
+                <mark>{{ label }}</mark>
+            {% endfor %}
             <h2>{{ node.name }}</h2>
         </div>
         <div class="flex-container">
@@ -86,7 +88,11 @@
                                 {% endif %}
                                 <ul>
                                     {% for target in edge.targets %}
-                                        <li><mark>{{ target.labels | join(', ') }}</mark> <a href="{{ url_for('show', id=target.id) }}">{{ target.name }}</a></li>
+                                        <li>
+                                            {% for label in  target.labels %}
+                                                <mark>{{ label }}</mark>
+                                            {% endfor %}
+                                             <a href="{{ url_for('show', id=target.id) }}">{{ target.name }}</a></li>
                                     {% endfor %}
                                 </ul>
                             </li>

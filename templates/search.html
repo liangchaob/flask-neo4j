@@ -195,8 +195,9 @@
                 defaultImageDiv.style.display = 'none';
                 nodes.forEach(node => {
                     var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
-                    var nodeLabels = node.labels.join(', ');
-                    resultsDiv.innerHTML += `<p><mark>${nodeLabels}</mark> ${nodeLink}</p>`;
+
+                    var nodeLabels = node.labels.map(label => `<mark>${label}</mark>`).join(' ');
+                    resultsDiv.innerHTML += `<p>${nodeLabels} ${nodeLink}</p>`;
                 });
             } else {
                 defaultImageDiv.style.display = 'block';
