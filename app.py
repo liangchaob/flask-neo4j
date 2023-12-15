@@ -8,7 +8,8 @@ from math import ceil  # 导入向上取整函数
 app = Flask(__name__)
 
 # 初始化 Neo4j 数据库连接
-uri = "bolt://"+ NEO4J_HOST + ":" + NEO4J_PORT
+uri = f"bolt://{NEO4J_HOST}:{NEO4J_PORT}"
+
 try:
     driver = GraphDatabase.driver(uri, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))
 except exceptions.ServiceUnavailable as e:
