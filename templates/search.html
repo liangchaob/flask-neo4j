@@ -243,7 +243,8 @@
                 nodes.forEach(node => {
                 var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
                 var nodeLabels = node.labels.map(label => `<mark>${label}</mark>`).join(' ');
-                var analysisButton = `<button class="analysis-btn" onclick="addToAnalysis(${node.id}, '${node.name.replace(/'/g, "\\'")}')">加入分析</button>`;
+                var nodeLabelsArrary = node.labels.map(label => `${label}`).join(' ');
+                var analysisButton = `<button class="analysis-btn" onclick="addToAnalysis(${node.id}, '${node.name.replace(/'/g, "\\'")}','${nodeLabelsArrary}')">加入分析</button>`;
                 resultsDiv.innerHTML += `<p class="node-item">${nodeLabels} ${nodeLink} ${analysisButton}</p>`;
             });
 
@@ -283,15 +284,16 @@
         // 管理选择的节点
         var analysisNodes = [];
 
-        function addToAnalysis(nodeId, nodeName) {
+        function addToAnalysis(nodeId, nodeName, nodeLabels) {
             if (!analysisNodes.some(node => node.id === nodeId)) {
-                analysisNodes.push({ id: nodeId, name: nodeName });
+                analysisNodes.push({ id: nodeId, name: nodeName ,labels: nodeLabels});
                 updateAnalysisCart();
             }
         }
 
 
         function updateAnalysisCart() {
+            var cart = document.getElementById('analysisCart');
             var cartDiv = document.getElementById('selectedNodes');
             cartDiv.innerHTML = '';
 
@@ -299,8 +301,20 @@
                 var list = document.createElement('ul');
                 analysisNodes.forEach(node => {
                     var listItem = document.createElement('li');
-                    listItem.textContent = node.name;
                     listItem.className = 'node-item'; // 应用 node-item 类
+
+                    // 创建并添加包含标签的 span 元素
+                    var labelSpan = document.createElement('mark');
+                    console.log(node.labels);
+                    labelSpan.textContent = node.labels; // 假设 label 是数组
+                    listItem.appendChild(labelSpan);
+
+                    // 在 span 之后添加节点名称
+                    var textNode = document.createTextNode(' ' + node.name);
+                    listItem.appendChild(textNode);
+
+                    // listItem.textContent = node.name;
+
 
                     // 添加移除按钮
                     var removeButton = document.createElement('button');
