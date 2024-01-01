@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>对比</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #f4f4f4;
+            background-color: #333;
+            text-align: center; /* 文本居中 */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .wrapper {
+            display: inline-block; /* 使容器成为内联块 */
+            text-align: left; /* 容器内部元素左对齐 */
+            margin-top: 20px;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        table {
+            margin: 20px auto; /* 上下保持原样，左右自动调整以居中 */
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left; /* 表格内容左对齐 */
+        }
+        .breadcrumb {
+            margin-bottom: 20px;
+        }
+        .breadcrumb a {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="/">Home</a> / 对比
+        </div>
+        <h1> {% for node in nodes %}{{ node.name }}{% if not loop.last %} vs {% endif %}{% endfor %}</h1>
+        <table>
+            <tr>
+                <th>属性 / 节点</th>
+                {% for node in nodes %}
+                    <th>{{ node.name }}</th>
+                {% endfor %}
+            </tr>
+
+            {% for key in all_keys %}
+                <tr>
+                    <td>{{ key }}</td>
+                    {% for node in nodes %}
+                        <td>{{ node.attributes[key] }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
+
+
+
+

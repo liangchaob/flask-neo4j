@@ -83,6 +83,47 @@
             background-color: #999; /* 选中的页码背景色 */
             color: black;
         }
+        /* node样式 */
+        .node-item {
+            position: relative;
+            padding-right: 100px; /* 为按钮保留空间，根据实际需要调整 */
+        }
+
+        .analysis-btn {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .node-item:hover .analysis-btn {
+            display: inline-block;
+        }
+        .node-item:hover a{
+            color: #333;
+            font-weight: bolder;
+        }
+        .node-item:hover {
+            background-color: #ccc;
+        }
+
+        #selectedNodes ul li{
+            list-style-type: none;
+            position: relative; /* 设置相对定位 */
+            text-align:left; 
+            padding-right: 100px;
+        }
+        .remove-btn {
+            display: none;
+            position: absolute;
+            right: 0;
+        }
+
+        #selectedNodes ul li:hover .remove-btn {
+            display: inline; /* 悬停时显示按钮 */
+        }
+
+
     </style>
 </head>
 <body>
@@ -115,6 +156,15 @@
         <!-- 分页区域 -->
         <div id="pagination" class="pagination"></div>
     </div>
+
+    <!-- 右下角的浮层 -->
+    <div id="analysisCart" style="position: fixed; bottom: 20px; right: 20px; display: none;">
+        <div id="selectedNodes"></div>
+        <button onclick="openAnalysisPage()">对比</button>
+        <button onclick="clearAnalysisCart()">清空</button>
+    </div>
+
+
 
     <script>
         // 当文档加载完成时，获取并显示所有标签及其节点数量
@@ -191,15 +241,17 @@
             if (nodes && nodes.length > 0) {
                 defaultImageDiv.style.display = 'none';
                 nodes.forEach(node => {
-                    var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
+                var nodeLink = `<a href="/show/${node.id}" target="_blank">${node.name}</a>`;
+                var nodeLabels = node.labels.map(label => `<mark>${label}</mark>`).join(' ');
+                var analysisButton = `<button class="analysis-btn" onclick="addToAnalysis(${node.id}, '${node.name.replace(/'/g, "\\'")}')">加入分析</button>`;
+                resultsDiv.innerHTML += `<p class="node-item">${nodeLabels} ${nodeLink} ${analysisButton}</p>`;
+            });
 
-                    var nodeLabels = node.labels.map(label => `<mark>${label}</mark>`).join(' ');
-                    resultsDiv.innerHTML += `<p>${nodeLabels} ${nodeLink}</p>`;
-                });
             } else {
                 defaultImageDiv.style.display = 'block';
             }
         }
+
 
         function renderPagination(totalPages, currentPage) {
             var paginationDiv = document.getElementById('pagination');
@@ -228,7 +280,64 @@
         };
 
 
-        
+        // 管理选择的节点
+        var analysisNodes = [];
+
+        function addToAnalysis(nodeId, nodeName) {
+            if (!analysisNodes.some(node => node.id === nodeId)) {
+                analysisNodes.push({ id: nodeId, name: nodeName });
+                updateAnalysisCart();
+            }
+        }
+
+
+        function updateAnalysisCart() {
+            var cartDiv = document.getElementById('selectedNodes');
+            cartDiv.innerHTML = '';
+
+            if (analysisNodes.length > 0) {
+                var list = document.createElement('ul');
+                analysisNodes.forEach(node => {
+                    var listItem = document.createElement('li');
+                    listItem.textContent = node.name;
+                    listItem.className = 'node-item'; // 应用 node-item 类
+
+                    // 添加移除按钮
+                    var removeButton = document.createElement('button');
+                    removeButton.textContent = '移除';
+                    removeButton.className = 'remove-btn'; // 应用 remove-btn 类
+                    removeButton.onclick = function() { removeFromAnalysis(node.id); };
+                    listItem.appendChild(removeButton);
+
+                    list.appendChild(listItem);
+                });
+                cartDiv.appendChild(list);
+
+                var cart = document.getElementById('analysisCart');
+                cart.style.display = 'block';
+            } else {
+                cart.style.display = 'none';
+            }
+        }
+
+
+        function removeFromAnalysis(nodeId) {
+            analysisNodes = analysisNodes.filter(node => node.id !== nodeId);
+            updateAnalysisCart();
+        }
+
+
+        function openAnalysisPage() {
+            // 从 analysisNodes 中提取节点的 ID
+            var nodeIds = analysisNodes.map(node => node.id).join(',');
+            window.open('/analysis?nodes=' + nodeIds, '_blank');
+        }
+
+        // 清空暂存的节点列表
+        function clearAnalysisCart() {
+            analysisNodes = []; // 清空数组
+            updateAnalysisCart(); // 更新界面
+        }
 
         
     </script>

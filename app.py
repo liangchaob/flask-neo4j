@@ -357,5 +357,48 @@ def dateformat(value, format='%Y-%m-%d %H:%M:%S'):
     return value.strftime(format) if value else ''
 
 
+# 用于获取节点详细信息的函数
+def get_node_details(node_id):
+    """从数据库获取特定节点的详细信息"""
+    with driver.session() as session:
+        node_query = "MATCH (n) WHERE ID(n) = $node_id RETURN n"
+        result = session.run(node_query, node_id=node_id)
+        node_data = result.single()
+        if node_data:
+            node = node_data["n"]
+            # 假设节点包含 name 和其他属性
+            return {
+                "id": node_id,
+                "name": node.get("name", "Unknown"),
+                "details": {k: v for k, v in node.items() if k != "name"}
+            }
+        else:
+            return {"id": node_id, "name": "Unknown", "details": {}}
+
+
+@app.route('/analysis', methods=['GET'])
+def analysis():
+    node_ids = request.args.get('nodes')
+    if node_ids:
+        node_ids = [int(nid.strip()) for nid in node_ids.split(',')]
+
+        # 获取每个节点的详细信息
+        nodes_details = [get_node_details(node_id) for node_id in node_ids]
+
+        # 找出所有节点共有的属性键
+        all_keys = set()
+        for node in nodes_details:
+            all_keys.update(node['details'].keys())
+
+        # 构建每个节点的属性字典，缺失的属性用 'N/A' 填充
+        for node in nodes_details:
+            node['attributes'] = {key: node['details'].get(key, 'N/A') for key in all_keys}
+
+        return render_template('analysis.html', nodes=nodes_details, all_keys=all_keys)
+    else:
+        return "No nodes provided for analysis", 400
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
